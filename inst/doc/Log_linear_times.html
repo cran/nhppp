@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="TA Trikalinos" />
+
+<meta name="date" content="2024-10-17" />
+
+<title>Sampling log-linear times</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Sampling log-linear times</h1>
+<h4 class="author">TA Trikalinos</h4>
+<h4 class="date">2024-10-17</h4>
+
+
+
+<div id="simulation-description" class="section level2">
+<h2>Simulation description</h2>
+<p>Assume a population of <span class="math inline">\(K =
+10^{5}\)</span> individuals indexed by <span class="math inline">\(k \in
+[K] := \{ 1, \dots, K\}\)</span>. For person <span class="math inline">\(k\)</span>, we want to simulate the first
+occurrence of an event (e.g., emergence of a tumor) over the age (time)
+interval <span class="math inline">\([T_{k0}, T_{k1})\)</span>. For
+example, <span class="math inline">\(T_{k0}\)</span> may be the age in
+years when person <span class="math inline">\(k\)</span> enters the
+simulation, and <span class="math inline">\(T_{k1}\)</span> the age in
+years when that person dies from non-cancer causes. (In practice, <span class="math inline">\(T_{k1}\)</span> would be obtained by separate
+point process.) Only some people will develop clinical cancer over their
+simulated lifetime.</p>
+<p>To fix a simulation scenario, let <span class="math inline">\(a_k =
+40\)</span> for all <span class="math inline">\(k\)</span> and <span class="math inline">\(b_k \sim U(50 , 100)\)</span>, where <span class="math inline">\(U()\)</span> is the uniform distribution.</p>
+<p>We use the log-linear intensity function</p>
+<p><span class="math inline">\(\lambda_k(t) = e^{\alpha_k + \beta_k
+t}\)</span>,</p>
+<p>where <span class="math inline">\(t\)</span> is age in years. The
+parameters <span class="math inline">\(\alpha_k, \beta_k\)</span> are
+random over the individuals in the population with <span class="math inline">\(\alpha_k \sim N(-4, 0.5)\)</span>, and <span class="math inline">\(\beta_k \sim N_{0+}(0.03, 0.003)\)</span>, where
+<span class="math inline">\(N()\)</span> is a normal distribution and
+<span class="math inline">\(N_{0+}()\)</span> is a truncated normal
+distribution with support <span class="math inline">\([0,
+\infty)\)</span>.</p>
+</div>
+<div id="overview-of-sampling-methods-described-here" class="section level2">
+<h2>Overview of sampling methods described here</h2>
+<p>We will use three methods:</p>
+<ol style="list-style-type: decimal">
+<li><p>Simulate one person at a time looping over persons. The fastest
+way to do this is to use a special case function in the
+<code>nhppp</code> package that samples from log-linear intensity
+functions in a non-vectorized fashion. Yet this will be slowest
+approach.</p></li>
+<li><p>Simulate all persons in a vectorized way using only the intensity
+function <span class="math inline">\(\lambda(t)\)</span>. When you only
+know <span class="math inline">\(\lambda(t)\)</span> <code>nhppp</code>
+uses the thinning algorithm. It is a very flexible approach because it
+does not require a lot of information – just <span class="math inline">\(\lambda(t)\)</span>. This will by much faster than
+the first option, but not as fast as the third option.</p></li>
+<li><p>Simulate all persons in a vectorized way using the cumulative
+intensity function <span class="math inline">\(\Lambda(t)\)</span> and
+its inverse <span class="math inline">\(\Lambda^{-1}(z)\)</span>, which
+are defined below. When you have analytic expressions for these objects,
+you get the fastest sampling in the <code>nhppp</code> package. Then the
+package can use the <code>inversion</code> or the
+<code>order statistics</code> algorithms which are more
+efficient.</p></li>
+</ol>
+</div>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>We will use <code>data.table</code>s – but the same analysis should
+be obvious in base <code>R</code>. We will use functions from three more
+packages, without loading them: the <code>truncnorm</code> package is
+only needed for the truncated normal distribution. The
+<code>tictoc()</code> package will be used for a simple time comparison
+between the different ways one can simulate this problem. The
+<code>stats</code> package is used to generate normally and uniformly
+distributed samples.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(nhppp)</span></code></pre></div>
+<p>Setup <code>pop</code>, the population <code>data.table</code>. The
+person specific parameters <span class="math inline">\(\alpha_k,
+\beta_k, T_{k0}\)</span> and <span class="math inline">\(T_{k1}\)</span>
+are variables in <code>pop</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">setDT</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>    <span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>K,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    <span class="at">alpha =</span> stats<span class="sc">::</span><span class="fu">rnorm</span>(<span class="at">n =</span> K, <span class="at">mean =</span> <span class="sc">-</span><span class="dv">4</span>, <span class="at">sd =</span> <span class="fl">0.5</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    <span class="at">beta =</span> truncnorm<span class="sc">::</span><span class="fu">rtruncnorm</span>(<span class="at">n =</span> K, <span class="at">mean =</span> <span class="fl">0.03</span>, <span class="at">sd =</span> <span class="fl">0.003</span>, <span class="at">a =</span> <span class="dv">0</span>, <span class="at">b =</span> <span class="cn">Inf</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>    <span class="at">T0 =</span> <span class="fu">rep</span>(<span class="dv">40</span>, K),</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>    <span class="at">T1 =</span> stats<span class="sc">::</span><span class="fu">runif</span>(<span class="at">n =</span> K, <span class="at">min =</span> <span class="dv">50</span>, <span class="at">max =</span> <span class="dv">100</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  )</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="fu">setindex</span>(pop, id)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>pop</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; Index: &lt;id&gt;</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt;             id     alpha       beta    T0       T1</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt;          &lt;int&gt;     &lt;num&gt;      &lt;num&gt; &lt;num&gt;    &lt;num&gt;</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt;      1:      1 -4.318439 0.02914304    40 74.23810</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt;      2:      2 -4.200092 0.03218084    40 62.26187</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt;      3:      3 -4.250369 0.02916144    40 81.29045</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt;      4:      4 -4.374602 0.02269157    40 94.50129</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt;      5:      5 -4.075769 0.02973159    40 67.73704</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt;     ---                                           </span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt;  99996:  99996 -4.113622 0.03196925    40 71.34211</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt;  99997:  99997 -5.111481 0.02665030    40 84.46180</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt;  99998:  99998 -3.628798 0.02907565    40 87.67655</span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt;  99999:  99999 -4.438333 0.03027740    40 99.96851</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt; 100000: 100000 -3.483592 0.02673899    40 57.45794</span></span></code></pre></div>
+<div id="intensity-cumulative-intensity-and-inverse-cumulative-intensity-functions" class="section level3">
+<h3>Intensity, cumulative intensity, and inverse cumulative intensity
+functions</h3>
+<p>Define some bespoke functions for the different simulation approaches
+below. The trick is to define functions so that they work in a
+vectorized form. For an example, take a look at the intensity function
+below. The other functions have the same bahavior.</p>
+<div id="intensity-function-lambda" class="section level4">
+<h4>Intensity function <span class="math inline">\(\lambda()\)</span></h4>
+<p>Define a vectorized form of the intensity function.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>l <span class="ot">&lt;-</span> <span class="cf">function</span>(t, <span class="at">alpha =</span> pop<span class="sc">$</span>alpha, <span class="at">beta =</span> pop<span class="sc">$</span>beta, ...) <span class="fu">exp</span>(alpha <span class="sc">+</span> beta <span class="sc">*</span> t)</span></code></pre></div>
+<p>Arguments <code>alpha</code> and <code>beta</code> can be scalars or
+vectors (or column matrices). Argument <code>t</code> can be a scalar, a
+vector of <span class="math inline">\(K\)</span> ages (times), or a
+<span class="math inline">\(K \times s\)</span> matrix. See some
+examples of the behavior of the vectorized function. The ellipses
+(<code>...</code>) allow <code>l()</code> to ignore extra arguments
+without breaking the execution of the script. While we won’t do that on
+purpose, some sampling functions in the <code>nhppp</code> package that
+take function arguments need the ability to pass optional extraneous
+arguments.</p>
+<p>Scalar arguments, evaluated at <code>t = 45</code></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">l</span>(<span class="at">t =</span> <span class="dv">45</span>, <span class="at">alpha =</span> <span class="sc">-</span><span class="dv">4</span>, <span class="at">beta =</span> <span class="fl">0.03</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; [1] 0.07065121</span></span></code></pre></div>
+<p>Scalar arguments, evaluated at <code>t = 45:50</code> (vector) or as
+a column matrix The function returns results in the format of the
+<code>t</code> argument.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">l</span>(<span class="at">t =</span> <span class="dv">45</span><span class="sc">:</span><span class="dv">50</span>, <span class="at">alpha =</span> <span class="sc">-</span><span class="dv">4</span>, <span class="at">beta =</span> <span class="fl">0.03</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; [1] 0.07065121 0.07280286 0.07502004 0.07730474 0.07965902 0.08208500</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="fu">l</span>(<span class="at">t =</span> <span class="fu">matrix</span>(<span class="dv">45</span><span class="sc">:</span><span class="dv">50</span>, <span class="at">ncol =</span> <span class="dv">1</span>), <span class="at">alpha =</span> <span class="sc">-</span><span class="dv">4</span>, <span class="at">beta =</span> <span class="fl">0.03</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt;            [,1]</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; [1,] 0.07065121</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; [2,] 0.07280286</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; [3,] 0.07502004</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; [4,] 0.07730474</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; [5,] 0.07965902</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; [6,] 0.08208500</span></span></code></pre></div>
+<p>Vector arguments, using the first 5 people and evaluating all people
+at <code>t = 45</code></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">l</span>(<span class="at">t =</span> <span class="dv">45</span>, <span class="at">alpha =</span> pop<span class="sc">$</span>alpha[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>], <span class="at">beta =</span> pop<span class="sc">$</span>beta[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>])</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; [1] 0.04943966 0.06380303 0.05296605 0.03496243 0.06470944</span></span></code></pre></div>
+<p>Matrix arguments are convenient: the rows are people and the columns
+are the ages (times) – and they can differ across persons. For the first
+5 people, we evaluate a different age for each person. The results are
+returned in a matrix format.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">l</span>(<span class="at">t =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">45</span>, <span class="dv">50</span>, <span class="dv">45</span>, <span class="fl">47.4</span>, <span class="dv">30</span>), <span class="at">ncol =</span> <span class="dv">1</span>), <span class="at">alpha =</span> pop<span class="sc">$</span>alpha[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>], <span class="at">beta =</span> pop<span class="sc">$</span>beta[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>])</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt;            [,1]</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; [1,] 0.04943966</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; [2,] 0.07494128</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; [3,] 0.05296605</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; [4,] 0.03691928</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; [5,] 0.04142702</span></span></code></pre></div>
+<p>For the first 5 people, we evaluate three different ages for each
+person. We arrange a <code>t_mat</code> matrix of ages (times) with
+people in the rows and ages (times) for each person in the columns. The
+results are returned in a matrix format.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>t_mat <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="dv">45</span>, <span class="dv">50</span>, <span class="dv">45</span>, <span class="fl">47.4</span>, <span class="dv">30</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="fl">45.1</span>, <span class="fl">50.1</span>, <span class="fl">45.5</span>, <span class="fl">47.8</span>, <span class="dv">38</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="dv">48</span>, <span class="fl">52.7</span>, <span class="fl">60.1</span>, <span class="fl">70.1</span>, <span class="fl">99.9</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>), <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>t_mat</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt;      [,1] [,2] [,3]</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; [1,] 45.0 50.0 45.0</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; [2,] 47.4 30.0 45.1</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; [3,] 50.1 45.5 47.8</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; [4,] 38.0 48.0 52.7</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; [5,] 60.1 70.1 99.9</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="fu">l</span>(<span class="at">t =</span> t_mat, <span class="at">alpha =</span> pop<span class="sc">$</span>alpha[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>], <span class="at">beta =</span> pop<span class="sc">$</span>beta[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>])</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt;            [,1]       [,2]       [,3]</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt; [1,] 0.04943966 0.05719509 0.04943966</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt; [2,] 0.06892608 0.03937330 0.06400868</span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt; [3,] 0.06145926 0.05374399 0.05747231</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; [4,] 0.02982757 0.03742537 0.04163741</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; [5,] 0.10137780 0.13647889 0.33101750</span></span></code></pre></div>
+<p>The defaults for the <code>alpha</code> and <code>beta</code>
+arguments of the <code>l()</code> functions are the respective columns
+of the whole population. We can then evaluate the intensity function
+<span class="math inline">\(\lambda()\)</span> for the whole population
+passing only the <code>t</code> argument.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>t_mat <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">45</span>, <span class="dv">50</span>, <span class="dv">55</span>), <span class="at">each =</span> K), <span class="at">ncol =</span> <span class="dv">3</span>, <span class="at">byrow =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">l</span>(<span class="at">t =</span> t_mat) <span class="sc">|&gt;</span> <span class="fu">head</span>()</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">#&gt;            [,1]       [,2]       [,3]</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; [1,] 0.04943966 0.04943966 0.04943966</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; [2,] 0.06380303 0.06380303 0.06380303</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; [3,] 0.05296605 0.05296605 0.05296605</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; [4,] 0.03496243 0.03496243 0.03496243</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; [5,] 0.06470944 0.06470944 0.06470944</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; [6,] 0.08214702 0.08214702 0.08214702</span></span></code></pre></div>
+</div>
+<div id="cumulative-intensity-function-lambdat" class="section level4">
+<h4>Cumulative intensity function <span class="math inline">\(\Lambda(t)\)</span></h4>
+<p>The cumulative intensity function is <span class="math inline">\(\Lambda(a, t) = \int_a^t \lambda(s) \
+\textrm{d}s\)</span>. It does not matter what we choose for the lower
+limit of integration in the definition of <span class="math inline">\(\Lambda\)</span>. The lower limit cancels out in
+the mathematics of the sampling algorithms. Thus we are free to use any
+lower limit (say 0) for any antiderivative of <span class="math inline">\(\lambda()\)</span> that is convenient (for any
+integration constant).</p>
+<p>With a slight abuse of notation, define 0 as the lower integration
+limit and write <span class="math inline">\({\Lambda(t) := \Lambda(0, t)
+= \int_0^t \lambda(s) \ \textrm{d}s}\)</span>. For the log-linear
+intensity in this example, <span class="math inline">\(\Lambda(t) =
+\frac{1}{\beta} (e^{\alpha + \beta t} - e^\alpha)\)</span>.</p>
+<p>The vectorized version of <span class="math inline">\(\Lambda\)</span> for our example is</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>L <span class="ot">&lt;-</span> <span class="cf">function</span>(t, <span class="at">alpha =</span> pop<span class="sc">$</span>alpha, <span class="at">beta =</span> pop<span class="sc">$</span>beta, ...) {</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  (<span class="fu">exp</span>(alpha <span class="sc">+</span> beta <span class="sc">*</span> t) <span class="sc">-</span> <span class="fu">exp</span>(alpha)) <span class="sc">/</span> beta</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+<div id="inverse-cumulative-intensity-function-lambda-1z" class="section level4">
+<h4>Inverse cumulative intensity function <span class="math inline">\(\Lambda^{-1}(z)\)</span></h4>
+<p>By its construction, <span class="math inline">\(\Lambda\)</span> is
+a strictly positive monotone function in <span class="math inline">\(t\)</span>, and thus invertible. The inverse of
+the cumulative intensity function <span class="math inline">\(\Lambda^{-1}\)</span> is defined as the function
+that recovers the <span class="math inline">\(t\)</span> when you pass
+it the <span class="math inline">\(\Lambda(t)\)</span>. The definition
+is that it satisfies <span class="math inline">\({\Lambda^{-1} \big (
+\Lambda(t) \big ) = t}\)</span>. In our example, <span class="math inline">\(\Lambda^{-1}(z) = \big(\log(\beta z + e^\alpha) -
+\alpha\big)/\beta\)</span>, which is easily derived from the formula of
+<span class="math inline">\(\Lambda(t)\)</span>.</p>
+<p>The vectorized implementation of <span class="math inline">\(\Lambda^{-1}\)</span> for our example is</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>Li <span class="ot">&lt;-</span> <span class="cf">function</span>(z, <span class="at">alpha =</span> pop<span class="sc">$</span>alpha, <span class="at">beta =</span> pop<span class="sc">$</span>beta, ...) {</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>  (<span class="fu">log</span>(beta <span class="sc">*</span> z <span class="sc">+</span> <span class="fu">exp</span>(alpha)) <span class="sc">-</span> alpha) <span class="sc">/</span> beta</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>}</span></code></pre></div>
+</div>
+</div>
+</div>
+<div id="method-1-non-vectorized-sampling-with-nhpppdraw_sc_loglinear" class="section level2">
+<h2>Method 1: non-vectorized sampling with
+<code>nhppp::draw_sc_loglinear()</code></h2>
+<p>The <code>nhppp</code> package function
+<code>draw_sc_loglinear()</code> draws times from log-linear densities
+for each person at a time. This is slower than the other methods, but
+can be practical even for sizeable simulations that will be run once
+(e.g., for statistical simulation analyses) or when you develop
+code.</p>
+<p>It’s arguments <code>intercept</code>, <code>slope</code> have the
+same name as the parameters in our log-linear intensity function <span class="math inline">\(\lambda\)</span>. The <code>t_min</code>,
+<code>t_max</code> arguments ask for the bounds of the interval <span class="math inline">\([T_{k0}, T_{k1})\)</span>. The argument
+<code>atmost1</code> asks only for the first time. This special case
+function uses a bespoke inversion algorithm; it’s as fast as we can do
+without vectorization.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">tic</span>(<span class="st">&quot;Method 1 (nonvectorized)&quot;</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>t_nonvec_special_case <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, K)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>K) {</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  t1 <span class="ot">&lt;-</span> nhppp<span class="sc">::</span><span class="fu">draw_sc_loglinear</span>(</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>    <span class="at">intercept =</span> pop<span class="sc">$</span>alpha[k],</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>    <span class="at">slope =</span> pop<span class="sc">$</span>beta[k],</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>    <span class="at">t_min =</span> pop<span class="sc">$</span>T0[k],</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>    <span class="at">t_max =</span> pop<span class="sc">$</span>T1[k],</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>    <span class="at">atmost1 =</span> <span class="cn">TRUE</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  )</span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(t1) <span class="sc">!=</span> <span class="dv">0</span>) {</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>    t_nonvec_special_case[k] <span class="ot">&lt;-</span> t1</span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>  }</span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>}</span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">toc</span>(<span class="at">log =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt; Method 1 (nonvectorized): 0.817 sec elapsed</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>pop[, t_nonvec_special_case <span class="sc">:=</span> t_nonvec_special_case]</span></code></pre></div>
+</div>
+<div id="method-2-vectorized-sampling-using-only-lambda" class="section level2">
+<h2>Method 2: Vectorized sampling using only <span class="math inline">\(\lambda()\)</span></h2>
+<p>When you only know the intensity function <span class="math inline">\(\lambda\)</span>, <code>nhppp</code> employs a
+thinning algorithm.</p>
+<p>One of the items needed for the thinning algorithm is a piecewise
+constant majorizer function <span class="math inline">\(\lambda_*\)</span> such that: <span class="math inline">\(\lambda_*(t) &gt;= \lambda(t)\)</span> for all
+<span class="math inline">\(t\)</span> of interest.</p>
+<p>The <code>nhppp::vdraw_intensity</code> function assumes that you
+will provide the majorizer function as a matrix
+(<code>lambda_maj_matrix</code>). To create this matrix, split the
+simulation time (here, from age 40 to age 100) in <span class="math inline">\(M\)</span> equal-length intervals. For person
+<span class="math inline">\(k\)</span> and interval <span class="math inline">\(m\)</span>, the element
+<code>lambda_maj_matrix[k, m]</code> records a supremum of <span class="math inline">\(\lambda_k\)</span> over the <span class="math inline">\(m\)</span>-th interval. Any supremum will do – but
+the algorithm is most efficient when you give it the least upper bound –
+practically, the maximum of <span class="math inline">\(\lambda(t)\)</span> over all <span class="math inline">\(t\)</span> in the interval. For monotone intensity
+functions, such as the function in the example, the maximum is at one of
+the interval’s bounds. It will be at the left bound, if <span class="math inline">\(\lambda\)</span> is decreasing, and at the right
+bound, if <span class="math inline">\(\lambda\)</span> is
+increasing.</p>
+<p>There is a helper function in <code>nhppp</code> that generates the
+majorizer matrix automatically for monotone (and possibly discontinuous)
+functions and for nonmonotone continuous Lipschitz functions (functions
+whose maximum slope is bounded). Even if your case is more complex, you
+should be able to find a supremum that works.</p>
+<p>This code samples in a vectorized fashion when you know only <span class="math inline">\(\lambda()\)</span>. It creates a majorizer matrix
+over <span class="math inline">\(M=5\)</span> intervals. To let the
+software know which times correspond to each of the <span class="math inline">\(M\)</span> intervals it suffices to specify a
+start and stop time for each row of the majorizer matrix with the
+<code>rate_matrix_t_min</code> and <code>rate_matrix_t_max</code>
+options. The sampling intervals <span class="math inline">\([T_{k0},
+T_{k1})\)</span>for each simulated person are a subset of the interval
+for which the majorizer matrix is defined, and are specified with the
+<code>t_min</code> and <code>t_max</code> options. (The
+<code>atmostB</code> option can be useful to speed up the sampling and
+minimize memory needs when one is interested in the first event only.
+The smaller the value, the faster the algorithm but you have to check
+that you have not specified it to be too small. In this example,
+<code>atmostB = 5</code> is fine – it returns exact solutions; but we
+have checked it [not shown]. If you do not want to mess with it, do not
+use the option. The function may be already fast enough for your
+needs).</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">tic</span>(<span class="st">&quot;Method 2 (vectorized, thinning)&quot;</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>M <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>break_points <span class="ot">&lt;-</span> <span class="fu">seq.int</span>(<span class="at">from =</span> <span class="dv">40</span>, <span class="at">to =</span> <span class="dv">100</span>, <span class="at">length.out =</span> M <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>breaks_mat <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">rep</span>(break_points, <span class="at">each =</span> K), <span class="at">nrow =</span> K)</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>lmaj_mat <span class="ot">&lt;-</span> nhppp<span class="sc">::</span><span class="fu">get_step_majorizer</span>(</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  <span class="at">fun =</span> l,</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  <span class="at">breaks =</span> breaks_mat,</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>  <span class="at">is_monotone =</span> <span class="cn">TRUE</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>)</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a></span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>pop[</span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>  ,</span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>  t_thinning <span class="sc">:=</span> nhppp<span class="sc">::</span><span class="fu">vdraw_intensity</span>(</span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>    <span class="at">lambda =</span> l,</span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>    <span class="at">lambda_maj_matrix =</span> lmaj_mat,</span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>    <span class="at">rate_matrix_t_min =</span> <span class="dv">40</span>,</span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>    <span class="at">rate_matrix_t_max =</span> <span class="dv">100</span>,</span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>    <span class="at">t_min =</span> pop<span class="sc">$</span>T0,</span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a>    <span class="at">t_max =</span> pop<span class="sc">$</span>T1,</span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>    <span class="at">atmost1 =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>    <span class="at">atmostB =</span> <span class="dv">5</span></span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>  )</span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a>]</span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">toc</span>(<span class="at">log =</span> <span class="cn">TRUE</span>) <span class="co"># timer end</span></span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a><span class="co">#&gt; Method 2 (vectorized, thinning): 0.074 sec elapsed</span></span></code></pre></div>
+</div>
+<div id="method-3-vectorized-sampling-using-lambda-and-lambda-1" class="section level2">
+<h2>Method 3: Vectorized sampling using <span class="math inline">\(\Lambda()\)</span> and <span class="math inline">\(\Lambda^{-1}()\)</span></h2>
+<p>The most efficient sampling is possible when one knows <span class="math inline">\(\Lambda()\)</span> and <span class="math inline">\(\Lambda^{-1}()\)</span>. The <code>nhppp</code>
+package can sample in this case using the
+<code>vdraw_cumulative_intensity()</code> function. Here
+<code>range_t</code> is a matrix with information on each person’s <span class="math inline">\([T_{k0}, T_{k1})\)</span>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">tic</span>(<span class="st">&quot;Method 3 (inversion)&quot;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>pop[</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>  ,</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  t_inversion <span class="sc">:=</span> nhppp<span class="sc">::</span><span class="fu">vdraw_cumulative_intensity</span>(</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>    <span class="at">Lambda =</span> L,</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>    <span class="at">Lambda_inv =</span> Li,</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>    <span class="at">t_min =</span> pop<span class="sc">$</span>T0,</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>    <span class="at">t_max =</span> pop<span class="sc">$</span>T1,</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>    <span class="at">atmost1 =</span> <span class="cn">TRUE</span></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>  )</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>]</span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">toc</span>(<span class="at">log =</span> <span class="cn">TRUE</span>) <span class="co"># timer end</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt; Method 3 (inversion): 0.009 sec elapsed</span></span></code></pre></div>
+</div>
+<div id="comparisons" class="section level2">
+<h2>Comparisons</h2>
+<div id="simulation-time-costs" class="section level3">
+<h3>Simulation time-costs</h3>
+<p>The simulation time-costs that you see in this document depend on the
+machine that rendered it. If you read this online, this machine is
+probably some virtual server with minimal resources. If you installed
+the package locally, it is probably the machine you are using to run
+<code>R</code>.</p>
+<ol style="list-style-type: decimal">
+<li><p>Method 1 (nonvectorized): 0.817 sec elapsed. This is the slowest
+approach – but still not bad for <span class="math inline">\(10^{5}\)</span> samples!</p></li>
+<li><p>Method 2 (vectorized, thinning): 0.074 sec elapsed. This approach
+is many times faster that then first approach. It is very flexible – it
+can accommodate very complex time varying intensity functions. You
+almost always know <span class="math inline">\(\lambda\)</span> and can
+get its majorizer <span class="math inline">\(\lambda_*\)</span> easily
+and fast.</p></li>
+<li><p>Method 3 (inversion): 0.009 sec elapsed. This approach is many
+times faster that the second one, but requires implementations for <span class="math inline">\(\Lambda\)</span> and <span class="math inline">\(\Lambda^{-1}\)</span>.</p></li>
+</ol>
+</div>
+<div id="simulated-times" class="section level3">
+<h3>Simulated times</h3>
+<p>All three methods sample correctly from the specified log-linear
+process. There is no approximation at play.</p>
+<p>The QQ plots compare the simulated times with the three methods. The
+agreement is excellent over this population of size <span class="math inline">\(K = 10^{5}\)</span>. As <span class="math inline">\(K\)</span> increases the agreement remains
+excellent (not shown here - try it for yourself). The paper in the
+bibliography includes in-depth comparisons. A set of QQ plots should
+suffice here.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">qqplot</span>(pop<span class="sc">$</span>t_nonvec_special_case, pop<span class="sc">$</span>t_thinning)</span></code></pre></div>
+<p><img role="img" aria-label="QQ plots comparing simulated times with the three methods. The QQ plots indicate excellent agreement." src="data:image/png;base64,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vv/+eyUga63BjxIOBPr27RsORQOuZV43wdq0aWOmT59uevXqZcqXL29OO+00M3HixKgi27dvn3nggQdMgwYNTMmSJU3z5s2VRNyBvOJB3PD5rF+/PvJYiRIlzBNPPKHx7d6927Rs2VLv3XXXXeZAKjfSnjt3rvqVjjnmGIPfkCFDzN69eyNpeeUBTb8WLVqYb7/91nTs2NEceeSRpkmTJpF8/v7774oNmo5u+fnnn83JJ59s3nrrLb28a9cuc80115gaNWooqXbt2tWsXbvW/YjZuXOnuf76681xxx1n6tSpo1bgTz/9FBUm2cn27dtN//79tTlbtmxZ07ZtW/PBBx9EHoGVecstt5jx48dr/LVq1VLih25u+fzzz02HDh0M4nD0cGOGsMuWLTOXXHKJNpeRzqOPPqqWK+4NHz7c9O7dG4cqwOjWW281jRs3NijbunXrmr///e8GZZuJJNMB8aL+wmJGPipXrmzOOeccs3LlykiSsL5RR1B3US7AbsuWLZH7OIDV3bRp00j9fu2116LuZ/VEvrp5K6VKlbLyslmpZHbevHn2zjvvtEWKFLFSABFM/ud//scWLVrU4r+04+2VV14JM8UKUUXCeMXz448/2jJlytj69etbeUGtVN7IsziQim+ffPJJjffyyy+PSj8qYJwTpF21alUrzTf7yCOPRPQTn1MktFceZs+ebQ866CBbs2ZNKy+VFWK0QrR6bdWqVRpP9+7d9VokUjmQF9IedthhVkjBSpPSColaIVt7++2325dfftnKi2ErVKhgf/nlF31MiNCed955qq9Ues1z7dq1bZcuXdzRJj3u06ePFZK1EyZMsJMnT7ZnnHGGLV68uN20aZM+B/xQpkI8dsaMGfbFF1+04nuzQuqReL/88kvVW146K6SquMkLbHv27BkJI5aplaax7dSpkxWr1f7jH/+wxYoVs5MmTdIwqAd43hHUIeRdOhk075dddpmWJ+oURIhCz+UjpOep/PHSYcqUKRrngAEDLI7vuOMOK75FKx9LjV7IXnU6++yzFSshZcUCeXJk9OjRWueh/9SpU+3f/vY3LfdXXnnFCZLV/zD781bw8h5//PH68jggoOIce+yxeipNJK10sYSBiopKLV89DecVDwK9//77Vr6OWmEQHnF88803+jz+IC4Q29NPPx25lsoB4hJnaFQexJqxZ511lj6e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" alt="QQ plots comparing simulated times with the three methods. The QQ plots indicate excellent agreement." /></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">qqplot</span>(pop<span class="sc">$</span>t_nonvec_special_case, pop<span class="sc">$</span>t_inversion)</span></code></pre></div>
+<p><img role="img" aria-label="QQ plots comparing simulated times with the three methods. The QQ plots indicate excellent agreement." src="data:image/png;base64,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" alt="QQ plots comparing simulated times with the three methods. The QQ plots indicate excellent agreement." /></p>
+</div>
+</div>
+<div id="acknowledgments" class="section level2">
+<h2>Acknowledgments</h2>
+<p>Thanks to Carolyn Rutter and Hui Hsuan Chan for providing the
+numerical example in this vignette.</p>
+</div>
+<div id="bibliography" class="section level2">
+<h2>Bibliography</h2>
+<p>Trikalinos TA, Sereda Y. <em>nhppp: Simulating Nonhomogeneous Poisson
+Point Processes in R</em>. arXiv preprint arXiv:2402.00358. 2024 Feb
+1.</p>
+<p>Since the publication of the paper, the syntax and options of the
+<code>nhppp</code> package have evolved. To reproduce the code in the
+paper, you have to install the version of <code>nhppp</code> used in the
+paper. Alternatively, take a look at the vignettes, which are written to
+work with the current package.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

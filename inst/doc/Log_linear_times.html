@@ -594,7 +594,7 @@ without vectorization.</p>
 <span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>  }</span>
 <span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>}</span>
 <span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>tictoc<span class="sc">::</span><span class="fu">toc</span>(<span class="at">log =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt; Method 1 (nonvectorized): 0.817 sec elapsed</span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt; Method 1 (nonvectorized): 0.778 sec elapsed</span></span>
 <span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>pop[, t_nonvec_special_case <span class="sc">:=</span> t_nonvec_special_case]</span></code></pre></div>
 </div>
 <div id="method-2-vectorized-sampling-using-only-lambda" class="section level2">
@@ -695,7 +695,7 @@ probably some virtual server with minimal resources. If you installed
 the package locally, it is probably the machine you are using to run
 <code>R</code>.</p>
 <ol style="list-style-type: decimal">
-<li><p>Method 1 (nonvectorized): 0.817 sec elapsed. This is the slowest
+<li><p>Method 1 (nonvectorized): 0.778 sec elapsed. This is the slowest
 approach – but still not bad for <span class="math inline">\(10^{5}\)</span> samples!</p></li>
 <li><p>Method 2 (vectorized, thinning): 0.074 sec elapsed. This approach
 is many times faster that then first approach. It is very flexible – it

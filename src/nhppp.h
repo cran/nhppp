@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include <Rcpp.h>
 #include <Rmath.h>
@@ -77,12 +78,14 @@ Rcpp::NumericMatrix vdraw_intensity_step_regular(
 
 
 Rcpp::NumericMatrix step_regular_inverse(
-  int max_events, 
+  const int max_events, 
   const Rcpp::NumericMatrix & Lambda,
   const Rcpp::NumericMatrix & Tau, 
   const Rcpp::NumericMatrix & range_t, 
-  bool atmost1
+  const bool atmost1
 );
+
+int safe_double_to_int(const double x);
 
 int rztpois(const double lambda);
 
